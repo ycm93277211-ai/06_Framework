@@ -6,6 +6,10 @@
   <title>thymeleaf</title>
 </head>
 <body>
+  <!-- teplates 폴더 기준 -->
+  <th:block th:replace="~{fragments/header}"></th:block>
+   <th:block th:replace="~{fragments/footer::footer2}"></th:block>
+
   <h1>thymeleaf</h1>
 
   <h3>1. 템플릿 엔진</h3>
@@ -55,6 +59,7 @@
    </li>
  </ol>
 
+ <th:block th:replace="~{fragments/footer::footer2}"></th:block>
 
 </body>
 </html>
