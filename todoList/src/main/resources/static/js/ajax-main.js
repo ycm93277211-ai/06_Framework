@@ -198,6 +198,114 @@ const selectTodoList = () => {
   } );
 };
 
+// 비동기로 할 일 상세 조회하는 함수
+const selectTodo = (url)=>{
+  // fetch() 요청 보내기
+  fetch(url)
+  .then(resp => resp.json())
+  .then(todo => {
+    // popuplayer의 제목 클릭 시 popuplayer 보이게 하기
+
+    // popup layer 에 조회해온 값을 출력
+    popupTodoNo.innerText = todo.todoNo;
+    popupTodoTitle.innerText = todo.todoTitle;
+    popupComplete.innerText = todo.complete;
+    popupRegDate.innerText = todo.regDate;
+    popupTodoContent.innerText = todo.todoContent;
+    // popuplayer 보이게 하기
+    popupLayer.classList.remove("popup-hidden");
+  });
+};
+
+// popuplayer의 X 클릭 시 popuplayer 보이게 하기
+popupClose.addEventListener("click",()=>{
+  // display:non 처리 해주는 class 추가
+  popupLayer.classList.add("popup-hidden");
+
+});
+
+// 삭제버튼 클릭 시 
+deleteBtn.addEventListener("click",()=>{
+  // 취소 클릭 시 해당 함수 종료
+  if(!confirm("정말 삭제하겠습니까?")){
+    return;
+  }
+
+  // 삭제할 할 일 번호 얻어오기
+  const todoNo = popupTodoNo.innerText;
+
+  // 확인 버튼 클릭 시 삭제 비동기 요청(DELETE 방식)
+  fetch("/ajax/delete",{
+    method : "DELETE", // @DeleteMapping()처리
+    headers : {"Content-Type" : "application/json"},
+    body : todoNo
+    // 보내는 데이터가 한개만 있을때todoNO 만 적어도 가능 body : todoNO 이런 식으로 가능
+  })
+  .then(resp => resp.text())
+  .then(result => {
+    if(result > 0){
+      alert("삭제 성공")
+
+      // 상세 조회 팝압 레이어 닫기
+      popupLayer.classList.add("popup-hidden");
+
+      // 전체, 완료된 할 일 갯수 다시 조회
+      // 할 일 목록 다시 조회
+      getTotalCount();
+      getCompleteCount();
+      selectTodoList();
+    }else{
+      alert("삭제 실패")
+    }
+})
+});
+
+// 완료 여부 변경 클릭 시
+changeComplete.addEventListener("click", ()=>{
+  
+  // 현재 완료여부를 반대값으로 변경한 값, 변경할 할 일 번호
+  const complete = popupComplete.innerText ==='Y' ? 'N':'Y';
+  const todoNo = popupTodoNo.innerText;
+  
+  // SQL 수행에 필요한 두 값을 JS 객체로 묶음
+  const obj = {"todoNo" : todoNo, "complete" : complete};
+  // {"todoNo" : 2, "complete": "Y"}
+
+  // 비동기로 완료 여부 변경 요청(PUT 요청 방식)
+  fetch("/ajax/changeComplete" , {
+    method: "PUT", // @PutMapping
+    headers: {"Content-Type" : "application/json"},
+    body: JSON.stringify(obj)
+  })
+  .then(resp=> resp.text())
+  .then(result =>{
+    if(result>0){
+      // update 된 DB 데이터를 다시 조회해서 화면에 출력
+      // -> 서버 부하가 큼 servletTOdo();
+
+      // 상세 조회 팝업에서 Y/N 바꾸기
+      popupComplete.innerText = complete;
+      
+      //getCompleteCount(); 서버 부하가 큼
+      // 기본 완료된 Todo 개수 +-1
+      const count = Number(completeCount.innerText);
+      if(complete == 'Y') {
+         completeCount.innerText = count + 1;
+      }else{
+         completeCount.innerText = count - 1;
+      }
+
+      selectTodoList();
+      // 서버 부하 줄이기 가능 하지만 넘 힘듦
+
+
+
+    }else{
+      alert("완료 여부 변경 실페..")
+    }
+
+  });
+});
 
 
 
