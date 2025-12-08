@@ -85,7 +85,10 @@ CREATE SEQUENCE SEQ_KEY_NO NOCACHE; -- 인증키 구분 번호 시퀀스
 
 SELECT * FROM "TB_AUTH_KEY";
 
+
 COMMIT;
+
+
 
 
 ------------------------------------------
