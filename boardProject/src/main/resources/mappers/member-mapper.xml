@@ -31,11 +31,22 @@
 		FROM MEMBER
 		WHERE  MEMBER_DEL_FL = 'N'
 		AND MEMBER_NICKNAME = #{memberNickname}
-	
 	</select>
 	
-
-
+	<!-- 화원 가입 -->
+	<insert id="signup">
+		INSERT INTO "MEMBER"
+		VALUES(SEQ_MEMBER_NO.NEXTVAL, 
+			 #{memberEmail},
+			 #{memberPw},
+			 #{memberNickname},
+			 #{memberTel},
+			 #{memberAddress},
+			 NULL,
+			 DEFAULT,
+			 DEFAULT,
+			 DEFAULT)
+	</insert>
 
 
 
