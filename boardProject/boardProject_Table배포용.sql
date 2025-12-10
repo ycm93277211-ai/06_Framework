@@ -49,7 +49,6 @@ VALUES(SEQ_MEMBER_NO.NEXTVAL,
 			 DEFAULT,
 			 DEFAULT
 );
-
 COMMIT;
 SELECT * FROM MEMBER;
 
@@ -64,6 +63,11 @@ WHERE MEMBER_NO = 1;
 	FROM MEMBER 
 	WHERE MEMBER_EMAIL = 'user01@kh.or.kr'
 	AND MEMBER_DEL_FL = 'N';
+
+UPDATE "MEMBER" SET
+MEMBER_DEL_FL = 'N'
+WHERE MEMBER_NO = 2;
+
 
 -----------------------------------------
 

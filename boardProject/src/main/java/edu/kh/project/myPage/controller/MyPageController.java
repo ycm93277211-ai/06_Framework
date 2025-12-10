@@ -3,20 +3,20 @@ package edu.kh.project.myPage.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.angus.mail.handlers.message_rfc822;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import edu.kh.project.common.config.SecurityConfig;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.service.MyPageService;
 import lombok.extern.slf4j.Slf4j;
@@ -35,13 +35,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("myPage")
 public class MyPageController {
 
+    private final SecurityConfig securityConfig;
+
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 	@Autowired
 	private MyPageService service;
 
-    MyPageController(BCryptPasswordEncoder bCryptPasswordEncoder) {
+    MyPageController(BCryptPasswordEncoder bCryptPasswordEncoder, SecurityConfig securityConfig) {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.securityConfig = securityConfig;
     }
 	
 	// 내 정보 조회
@@ -138,11 +141,95 @@ public class MyPageController {
 		return "myPage/myPage-secession";
 	}
 	
+	/** 회원 탈퇴
+	 * @param memberPw : 제출받은(입력한 ) 비밀번호
+	 * @param loginMember : 로그인 회원 정보 저장 객체 (세션에서 꺼내옴)
+	 * 						-> 회원번호 필요!(SQL에서 조건으로 사용)
+	 * @return
+	 */
+	@PostMapping("secession")
+	public String secession(@RequestParam("memberPw")String memberPw,
+							@SessionAttribute("loginMember") Member loginMember,
+							SessionStatus status,
+							RedirectAttributes ra) {
+	
+		// 로그인한 회원의 회원번호 꺼내오기
+		int memberNo= loginMember.getMemberNo();
+		
+		// 서비스 호출(입력받은 비밀번호, 로그인한 회원번호)
+		int result = service.secession(memberPw,loginMember);
+		
+		
+		String message = null;
+		String path = null;
+		
+		if(result > 0 ) {
+			message= "탈퇴 되었습니다.";
+			path = "/";
+			
+			status.setComplete(); // 세션 비우기 (로그아웃 상태 변경)
+		}else {
+			message= "탈퇴 안 되었습니다.";
+			path = "secession";
+		}
+		
+		
+		// 탈퇴 성공 - 메인페이지 재요청
+		// 탈퇴 실패 - 탈퇴 페이지로 재요청
+		ra.addFlashAttribute("message", message);
+		
+		
+		return "redirect:"+path;
+	}
+	
+	
+	
+	
 	// 파일 테스트 화면으로 이동
 	@GetMapping("fileTest")
 	public String fileTest() {
 		return "myPage/myPage-fileTest";
 	}
+	
+	// 파일 업로드 테스트 1
+	@PostMapping("file/test1")
+	public String fileUpload1(@RequestParam("uploadFile")MultipartFile uploadFile ,
+			RedirectAttributes ra) {
+		/*
+		 * String에서 파일을 처리하는 방법
+		 * 
+		 * - enctype = "multipart/form-data" 로 클라이언트의 요청을 받으면
+		 * (문자,숫자,파일 등이 섞여있는 요청)
+		 * 
+		 * 이를 MultipartResolver(FileConfig에 정의)를 이용해서
+		 * 섞여있는 파라미터를 분리 작업을 함
+		 * 
+		 * 문자열, 숫자 -> String
+		 * 파일 		-> MultipartFile
+		 * 
+		 * */
+		String path;
+		try {
+			path = service.fileUpload1(uploadFile);
+			
+			
+			if(path != null) {
+				ra.addFlashAttribute("path",path);
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		// /myPage/file/파일명.jpg
+		
+		// 파일이 실제로 서버 컴퓨터에 저장이 되어
+		// 웹에서 접근할 수 있는 경로가 반환되었을 때
+		
+		return "redirect:/myPage/fileTest";
+	}
+	
+	
 	// 파일 목록 조회 화면 이동
 	@GetMapping("fileList")
 	public String fileList() {
