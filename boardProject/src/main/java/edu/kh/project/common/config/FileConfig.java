@@ -38,6 +38,16 @@ public class FileConfig implements WebMvcConfigurer{
 	@Value("${spring.servlet.multipart.max-file-size}")
 	private long maxFileSize; // -> 10485760
 	
+	// ---------------------------------------------------
+	
+	// 프로필 이미지 관련 정보
+	@Value("${my.profile.resource-hendler}")
+	private String profileResourceHandler; // -> /myPage/profile/**
+	
+	@Value("${my.profile.resource-location}")
+	private String profileResourceLocation; // -> file:///C:uploadFiles/profile/
+	
+	
 	// 요청 주소에 따라
 	// 서버 컴퓨터의 어떤 경로에 접근할지 설정
 	@Override
@@ -53,7 +63,10 @@ public class FileConfig implements WebMvcConfigurer{
 		// -> 클라이언트 "/myPage/file/**" 패턴으로 이미지를 요청할 때
 		// 서버 폴더 경로 중 C:/uploadFilees/test/ 로 연결하기
 		
-		
+		registry.addResourceHandler("/myPage/profile/**")
+		.addResourceLocations("file:///C:/uploadFiles/profile/");
+		// -> 클라이언트 "/myPage/profile/**" 패턴으로 이미지를 요청할 때
+		// 서버 폴더 경로 중 file:///C:uploadFiles/profile/ 로 연결하기
 		
 		
 		
