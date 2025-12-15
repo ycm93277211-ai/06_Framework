@@ -35,7 +35,7 @@ public class EmailConfig {
 	// @Value : properties에 작성된 내용 중
 	// key가 일치하는 value값을 얻어와 필드에 대입
 	@Value("${spring.mail.username}")
-	private String userName;
+	private String userName; 
 
 	@Value("${spring.mail.password}")
 	private String password;
