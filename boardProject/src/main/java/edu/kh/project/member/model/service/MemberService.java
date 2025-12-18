@@ -1,22 +1,24 @@
 package edu.kh.project.member.model.service;
 
+import java.util.List;
+
 import edu.kh.project.member.model.dto.Member;
 
 public interface MemberService {
 
 	/** 로그인 서비스
 	 * @param inputMember
-	 * @return	loginMember
+	 * @return loginMember
 	 */
 	Member login(Member inputMember) throws Exception;
 
-	/** 이메일 중복 검사
+	/** 이메일 중복검사 서비스
 	 * @param memberEmail
 	 * @return
 	 */
 	int checkEmail(String memberEmail);
 
-	/** 닉네임 중복 검사
+	/** 닉네임 중복검사 서비스
 	 * @param memberNickname
 	 * @return
 	 */
@@ -28,5 +30,24 @@ public interface MemberService {
 	 * @return
 	 */
 	int signup(Member inputMember, String[] memberAddress);
+	
+	
+	/** 회원 목록 조회(비동기)
+	 * @return memberList
+	 */
+	List<Member> selectMemberList();
+
+	/** 비밀번호 초기화(비동기)
+	 * @param inputNo
+	 * @return
+	 */
+	int resetPw(int inputNo);
+
+	/** 탈퇴 회원 복구(비동기)
+	 * @param inputNo
+	 * @return
+	 */
+	int restoreMember(int inputNo);
+	
 
 }

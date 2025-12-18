@@ -47,6 +47,10 @@
 			 DEFAULT,
 			 DEFAULT)
 	</insert>
+	
+	<select id="selectMemberList">
+		SELECT * FROM "MEMBER"
+	</select>
 
 
 
