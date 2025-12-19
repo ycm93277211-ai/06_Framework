@@ -3,7 +3,9 @@ package edu.kh.project.board.model.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.RuntimeErrorException;
 
@@ -26,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @PropertySource("classpath:/config.properties")
 public class EditBoardServiceImpl implements EditBoardService {
 
+    private final BoardServiceImpl boardServiceImpl;
+
 	@Autowired
 	private EditBoardMapper mapper;
 
@@ -34,6 +38,10 @@ public class EditBoardServiceImpl implements EditBoardService {
 
 	@Value("${my.board.folder-path}")
 	private String folderPath;
+
+    EditBoardServiceImpl(BoardServiceImpl boardServiceImpl) {
+        this.boardServiceImpl = boardServiceImpl;
+    }
 
 	// 게시글 작성 서비스
 	@Override
@@ -76,8 +84,13 @@ public class EditBoardServiceImpl implements EditBoardService {
 				String rename = Utility.fileRename(originalName);
 
 				// 모든 값을 저장할 BoardImg DTO 객체 생성
-				BoardImg img = BoardImg.builder().imgOriginalName(originalName).imgRename(rename).imgPath(webPath)
-						.boardNo(boardNo).imgOrder(i).uploadFile(images.get(i)).build();
+				BoardImg img = BoardImg.builder()
+						.imgOriginalName(originalName)
+						.imgRename(rename).imgPath(webPath)
+						.boardNo(boardNo)
+						.imgOrder(i)
+						.uploadFile(images.get(i))
+						.build();
 
 				// uploadList
 				uploadList.add(img);
@@ -116,6 +129,121 @@ public class EditBoardServiceImpl implements EditBoardService {
 		}
 
 		return boardNo;
+	}
+
+	// 게시글 수정 서비스
+	@Override
+	public int boardUpdate(Board inputBoard,
+							List<MultipartFile> images,
+							String deleteOrederList) throws IllegalStateException, IOException {
+		
+		// 1. 게시글 부분 수정
+		int result = mapper.boardupdate(inputBoard);
+		
+		// 수정 실패 시 바로 리턴
+		if(result == 0) return 0;
+		
+		// 2. 기존 O -> 삭제된 이미지가 있는 경우
+		if(deleteOrederList != null && !deleteOrederList.equals("")) {
+			
+			Map<String, Object> map = new HashMap<>();
+			map.put("deleteOrederList", deleteOrederList);
+			map.put("boardNo", inputBoard.getBoardNo());
+			
+			// BOARD_IMG 에 존재하는 행을 삭제하는 SQL 호출
+			result = mapper.deleteImage(map);
+			
+			// 삭제 실패한 경우 -> 롤백
+			if(result == 0) {
+				throw new RuntimeException();
+			}
+			
+		}
+		
+		// 3. 선택한 파일이 존재할 경우
+		// (클라리언트가 실제로 업로드한 이미지가 있는경우)
+		
+		// 실제 업로드된 이미지만 모아둘 list 생성
+		List<BoardImg> uploadList = new ArrayList<>();
+
+		// images 리스트에서 하나씩 꺼내어 파일이 있는지 검사
+		for (int i = 0; i < images.size(); i++) {
+
+			// 실제 파일이 제출된 경우
+			if (!images.get(i).isEmpty()) {
+
+				// 원본명
+				String originalName = images.get(i).getOriginalFilename();
+
+				// 변경명
+				String rename = Utility.fileRename(originalName);
+
+				// 모든 값을 저장할 BoardImg DTO 객체 생성
+				BoardImg img = BoardImg.builder()
+						.imgOriginalName(originalName)
+						.imgRename(rename).imgPath(webPath)
+						.boardNo(inputBoard.getBoardNo())
+						.imgOrder(i)
+						.uploadFile(images.get(i))
+						.build();
+
+				// uploadList
+				uploadList.add(img);
+				
+				// 4. 업로드 하려는 이미지 정보 이용해서
+				// 수정 또는 삽입 수행
+				
+				// 1) 기존 o -> 새 이미지로 변경 -> 수정
+				result = mapper.updateImage(img);
+				
+				if(result == 0) {
+					// 수정 실패 == 기존해당 순서에 이미지가 없었음
+					// -> 삽입 수행
+					
+					// 2) 기존 x -> 새 이미지 추가
+					result = mapper.insertImage(img);
+				}
+				
+			}
+			
+			// 수정 또는 삽입가 실패한 경우
+			if(result == 0) {
+				throw new RuntimeException();
+			}
+		
+		}
+		
+		// 선택한 파일이 없는 경우
+		if(uploadList.isEmpty()) {
+			return result;
+		}
+		
+		// 수정, 새 이미지 파일을 서버에 저장
+		for(BoardImg img : uploadList) {
+			img.getUploadFile().transferTo(new File(folderPath+img.getImgRename()));
+		}
+		
+		return result;
+	}
+
+	// 게시글 삭제
+	@Override
+	public int boardDelete(int boardCode, int boardNo, int memberNo) {
+		
+		Map<String, Integer> map = new HashMap<>();
+		map.put("boardCode", boardCode);
+		map.put("boardNo", boardNo);
+		map.put("loginMember",memberNo);
+		
+		int result = mapper.boardDelete(map);
+		
+		
+		if(result == 0) {
+			throw new RuntimeException();
+		}
+		
+		
+		return result;
 	}
 
 }
