@@ -28,13 +28,15 @@ public class AdminController {
 	private final AdminService service;
 	
 	@PostMapping("login")
-	public Member login(@RequestBody Member inputMember, Model model) {
+	public Member login(@RequestBody Member inputMember, HttpSession session) {
 		
 		Member loginMember = service.login(inputMember);
 		
 		if(loginMember == null) return null;
 		
-		model.addAttribute("loginMember", loginMember);
+//		model.addAttribute("loginMember", loginMember);
+		// 세션에 직접 저장
+	    session.setAttribute("loginMember", loginMember);
 		return loginMember;
 		
 	}
