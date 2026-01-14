@@ -49,6 +49,21 @@ VALUES(SEQ_MEMBER_NO.NEXTVAL,
 			 DEFAULT,
 			 DEFAULT
 );
+
+-- 샘플 회원 데이터 삽입
+INSERT INTO "MEMBER"
+VALUES(SEQ_MEMBER_NO.NEXTVAL,
+			 'admin1@kh.or.kr',
+			 '$2a$10$SC0KYLzAdtkZT12h5wTWT.csuiG.boiRC4ct6Mioe5puIo4W7GZmW',
+			 '관리자1',
+			 '01012341234',
+			 '01234^^^서울시 중구 남대문로 120^^^3층, E강의장',
+			 NULL,
+			 DEFAULT,
+			 DEFAULT,
+			 2
+);
+COMMIT;
 COMMIT;
 SELECT * FROM MEMBER;
 
