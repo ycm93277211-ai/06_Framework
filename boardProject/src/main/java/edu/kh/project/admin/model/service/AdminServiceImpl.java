@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import edu.kh.project.admin.model.mapper.AdminMapper;
+import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.common.util.Utility;
 import edu.kh.project.member.model.dto.Member;
 import lombok.RequiredArgsConstructor;
@@ -68,6 +69,48 @@ public class AdminServiceImpl implements AdminService{
 	public List<Member> adminAccountList() {
 		
 		return mapper.adminAccountList();
+	}
+
+	@Override
+	public Board maxReadCount() {
+		// TODO Auto-generated method stub
+		return mapper.maxReadCount();
+	}
+
+	@Override
+	public Board maxLikeCount() {
+		// TODO Auto-generated method stub
+		return mapper.maxLikeCount();
+	}
+
+	@Override
+	public List<Member> selectWithdrawnMemberList() {
+		// TODO Auto-generated method stub
+		return mapper.selectWithdrawnMemberList();
+	}
+
+	@Override
+	public int restoreMember(int memberNo) {
+		// TODO Auto-generated method stub
+		return mapper.restoreMember(memberNo);
+	}
+
+	@Override
+	public Board maxCommentCount() {
+		// TODO Auto-generated method stub
+		return mapper.maxCommentCount();
+	}
+
+	@Override
+	public List<Board> getBoardList() {
+		// TODO Auto-generated method stub
+		return mapper.getBoardList();
+	}
+
+	@Override
+	public int restoreBoard(int BoardNo) {
+		// TODO Auto-generated method stub
+		return mapper.restoreBoard(BoardNo);
 	}
 	
 	
